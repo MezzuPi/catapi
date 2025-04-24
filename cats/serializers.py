@@ -17,14 +17,18 @@ class GatoSerializer(serializers.ModelSerializer):
         fields = ['id', 'id_usuario', 'nombre', 'edad', 'descripcion', 'raza']
 
 class FotoSerializer(serializers.ModelSerializer):
-    votos_good = serializers.IntegerField(read_only=True)
-    votos_evil = serializers.IntegerField(read_only=True)
+    imagen_url = serializers.SerializerMethodField()
+    nombre_gato = serializers.CharField(source='id_gato.nombre', read_only=True)
+    raza_gato = serializers.CharField(source='id_gato.raza', read_only=True)
     
     class Meta:
         model = Foto
-        fields = ['id', 'id_gato', 'url', 'descripcion', 'fecha_subida', 
-                 'en_miniblog', 'votos_good', 'votos_evil']
+        fields = ['id', 'id_gato', 'imagen', 'imagen_url', 'descripcion', 
+                 'fecha_subida', 'en_miniblog', 'nombre_gato', 'raza_gato']
         read_only_fields = ['fecha_subida']
+
+    def get_imagen_url(self, obj):
+        return obj.imagen.url
 
 class VotoSerializer(serializers.ModelSerializer):
     class Meta:

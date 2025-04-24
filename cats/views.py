@@ -54,15 +54,13 @@ class FotoViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def feed(self, request):
-        # Get random photos for the feed, excluding ones the user has already voted on
-        fotos = Foto.objects.exclude(
-            voto__id_usuario=request.user
-        ).annotate(
-            votos_good=Count('voto', filter=Q(voto__tipo='good')),
-            votos_evil=Count('voto', filter=Q(voto__tipo='evil'))
-        ).order_by('?')[:10]
-        
-        return Response(FotoSerializer(fotos, many=True).data)
+        """
+        Returns random photos for the feed.
+        """
+        # Get 10 random photos
+        fotos = Foto.objects.order_by('?')[:10]
+        serializer = self.get_serializer(fotos, many=True)
+        return Response(serializer.data)
 
     @action(detail=True, methods=['post'])
     def toggle_miniblog(self, request, pk=None):
