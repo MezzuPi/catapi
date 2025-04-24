@@ -2,10 +2,11 @@ Django==5.2
 djangorestframework==3.14.0
 django-cors-headers==4.3.1
 python-dotenv==1.0.1
-Pillow==10.2.0  # For image handling
+Pillow>=10.0.0,<11.0.0  # More flexible Pillow requirement
 django-filter==24.1  # For advanced filtering
 djangorestframework-simplejwt==5.3.1
-psycopg2-binary==2.9.9  # For PostgreSQL
+psycopg==3.1.18  # Modern PostgreSQL adapter
+typing_extensions>=4.6.1  # Required by psycopg
 whitenoise==6.6.0  # For serving static files
 gunicorn==21.2.0  # For production server
 dj-database-url==2.1.0  # For Railway database URL
