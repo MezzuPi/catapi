@@ -1,1 +1,1 @@
-web: python manage.py collectstatic --no-input && python manage.py migrate && gunicorn catapi.wsgi 
+web: cd catapi && python manage.py collectstatic --no-input && python manage.py migrate && gunicorn --chdir catapi catapi.wsgi 
