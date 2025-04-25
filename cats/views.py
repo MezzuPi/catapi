@@ -2,27 +2,63 @@ from django.shortcuts import render
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db.models import Count, Q
 from django.utils import timezone
+from django.contrib.auth.models import User
 from .models import (
     Usuario, Gato, Foto, Voto, Comentario,
     Tag, FotoTag, Badge, GatoBadge,
     Chat, Mensaje, Notificacion
 )
 from .serializers import (
-    UsuarioSerializer, GatoSerializer, FotoSerializer, VotoSerializer,
-    ComentarioSerializer, TagSerializer, FotoTagSerializer,
-    BadgeSerializer, GatoBadgeSerializer, ChatSerializer,
-    MensajeSerializer, NotificacionSerializer
+    UserSerializer, UsuarioSerializer, GatoSerializer, FotoSerializer,
+    VotoSerializer, ComentarioSerializer, TagSerializer,
+    FotoTagSerializer, BadgeSerializer, GatoBadgeSerializer,
+    ChatSerializer, MensajeSerializer, NotificacionSerializer
 )
 
 # Create your views here.
+
+class RegisterView(viewsets.GenericViewSet):
+    queryset = User.objects.all()
+    permission_classes = (AllowAny,)
+    serializer_class = UserSerializer
+
+    def create(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        
+        # Create associated Usuario profile
+        usuario = Usuario.objects.get(user=user)
+        usuario_serializer = UsuarioSerializer(usuario)
+        
+        return Response({
+            'user': serializer.data,
+            'profile': usuario_serializer.data
+        }, status=status.HTTP_201_CREATED)
 
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.all()
     serializer_class = UsuarioSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if self.action in ['list', 'retrieve']:
+            return Usuario.objects.all()
+        return Usuario.objects.filter(user=self.request.user)
+
+    @action(detail=False, methods=['GET'])
+    def me(self, request):
+        usuario = self.get_queryset().first()
+        if not usuario:
+            return Response(
+                {'detail': 'Usuario profile not found'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        serializer = self.get_serializer(usuario)
+        return Response(serializer.data)
 
     @action(detail=True, methods=['get'])
     def perfil(self, request, pk=None):
@@ -50,7 +86,7 @@ class GatoViewSet(viewsets.ModelViewSet):
 class FotoViewSet(viewsets.ModelViewSet):
     queryset = Foto.objects.all()
     serializer_class = FotoSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]  # Temporarily allow all access for testing
 
     @action(detail=False, methods=['get'])
     def feed(self, request):
