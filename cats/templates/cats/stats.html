@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat API Statistics</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .stat-card {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .stat-heading {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #444;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2c68b1;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+        .top-list {
+            margin-top: 10px;
+        }
+        .top-list li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cat API Statistics Dashboard</h1>
+    
+    <div class="grid">
+        <div class="stat-card">
+            <div class="stat-heading">Total Cats</div>
+            <div class="stat-value">{{ total_cats }}</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-heading">Total Photos</div>
+            <div class="stat-value">{{ total_photos }}</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-heading">Total Users</div>
+            <div class="stat-value">{{ total_users }}</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-heading">Total Votes</div>
+            <div class="stat-value">{{ total_votes }}</div>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-heading">Top Cat Breeds</div>
+        <ol class="top-list">
+            {% for breed in top_breeds %}
+            <li>{{ breed.raza }} ({{ breed.count }})</li>
+            {% endfor %}
+        </ol>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-heading">Recent Activity</div>
+        <ul class="top-list">
+            {% for activity in recent_activity %}
+            <li>{{ activity.activity_type }} - {{ activity.date|date:"d/m/Y H:i" }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html> 

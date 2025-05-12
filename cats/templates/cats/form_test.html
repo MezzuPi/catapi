@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat API Form Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .form-container {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .response {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        .error {
+            color: #a94442;
+            background-color: #f2dede;
+            border-color: #ebccd1;
+        }
+        .success {
+            color: #3c763d;
+            background-color: #dff0d8;
+            border-color: #d6e9c6;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cat API Form Test</h1>
+    
+    <div class="form-container">
+        <h2>Create New Cat</h2>
+        <form id="cat-form">
+            <div class="form-group">
+                <label for="nombre">Name:</label>
+                <input type="text" id="nombre" name="nombre" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="edad">Age:</label>
+                <input type="number" id="edad" name="edad" min="0" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="raza">Breed:</label>
+                <input type="text" id="raza" name="raza" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="descripcion">Description:</label>
+                <textarea id="descripcion" name="descripcion" rows="4" required></textarea>
+            </div>
+            
+            <button type="submit">Create Cat</button>
+        </form>
+        
+        <div id="cat-response" class="response" style="display: none;"></div>
+    </div>
+    
+    <div class="form-container">
+        <h2>Add Comment</h2>
+        <form id="comment-form">
+            <div class="form-group">
+                <label for="id_foto">Photo ID:</label>
+                <input type="number" id="id_foto" name="id_foto" min="1" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="contenido">Comment:</label>
+                <textarea id="contenido" name="contenido" rows="4" required></textarea>
+            </div>
+            
+            <button type="submit">Add Comment</button>
+        </form>
+        
+        <div id="comment-response" class="response" style="display: none;"></div>
+    </div>
+    
+    <div class="form-container">
+        <h2>Vote for Photo</h2>
+        <form id="vote-form">
+            <div class="form-group">
+                <label for="id_foto_vote">Photo ID:</label>
+                <input type="number" id="id_foto_vote" name="id_foto" min="1" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="tipo">Vote Type:</label>
+                <select id="tipo" name="tipo" required>
+                    <option value="good">Good</option>
+                    <option value="evil">Evil</option>
+                </select>
+            </div>
+            
+            <button type="submit">Vote</button>
+        </form>
+        
+        <div id="vote-response" class="response" style="display: none;"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Token handling
+            function getToken() {
+                return localStorage.getItem('token');
+            }
+
+            // Generic form submission handler
+            function handleFormSubmit(formId, endpoint, responseId) {
+                const form = document.getElementById(formId);
+                const responseDiv = document.getElementById(responseId);
+                
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const formData = new FormData(form);
+                    const data = {};
+                    for (let [key, value] of formData.entries()) {
+                        data[key] = value;
+                    }
+                    
+                    // Add the token header
+                    const token = getToken();
+                    const headers = {
+                        'Content-Type': 'application/json',
+                    };
+                    
+                    if (token) {
+                        headers['Authorization'] = `Bearer ${token}`;
+                    }
+                    
+                    fetch(endpoint, {
+                        method: 'POST',
+                        headers: headers,
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        responseDiv.textContent = JSON.stringify(data, null, 2);
+                        responseDiv.classList.remove('error');
+                        responseDiv.classList.add('success');
+                        responseDiv.style.display = 'block';
+                    })
+                    .catch(error => {
+                        responseDiv.textContent = 'Error: ' + error.message;
+                        responseDiv.classList.remove('success');
+                        responseDiv.classList.add('error');
+                        responseDiv.style.display = 'block';
+                    });
+                });
+            }
+            
+            // Setup form handlers
+            handleFormSubmit('cat-form', '/api/gatos/', 'cat-response');
+            handleFormSubmit('comment-form', '/api/comentarios/', 'comment-response');
+            handleFormSubmit('vote-form', '/api/votos/', 'vote-response');
+        });
+    </script>
+</body>
+</html> 

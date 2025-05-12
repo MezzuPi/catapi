@@ -55,14 +55,28 @@ class VotoSerializer(serializers.ModelSerializer):
         read_only_fields = ['fecha_voto']
 
 class ComentarioSerializer(serializers.ModelSerializer):
+    id_usuario_details = serializers.SerializerMethodField()
     username = serializers.CharField(source='id_usuario.username', read_only=True)
-    avatar_url = serializers.CharField(source='id_usuario.avatar_url', read_only=True)
+    avatar_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Comentario
         fields = ['id', 'id_usuario', 'id_foto', 'contenido', 'fecha_comentario', 
-                 'username', 'avatar_url']
+                'username', 'avatar_url', 'id_usuario_details']
         read_only_fields = ['fecha_comentario']
+    
+    def get_avatar_url(self, obj):
+        try:
+            usuario = Usuario.objects.get(user=obj.id_usuario)
+            return usuario.avatar_url
+        except Usuario.DoesNotExist:
+            return None
+    
+    def get_id_usuario_details(self, obj):
+        return {
+            'id': obj.id_usuario.id,
+            'username': obj.id_usuario.username
+        }
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:

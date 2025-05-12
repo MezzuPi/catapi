@@ -69,7 +69,7 @@ ROOT_URLCONF = 'catapi.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'cats/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

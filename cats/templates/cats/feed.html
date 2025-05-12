@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat API - Photo Feed</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --danger-color: #F44336;
+            --card-width: 380px;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: var(--card-width);
+            margin: 0 auto;
+            padding: 20px;
+            height: calc(100vh - 80px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #333;
+        }
+        
+        .feed {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .photo-card {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform-origin: center;
+            transition: transform 0.3s ease;
+            width: 100%;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .empty-state h3 {
+            margin-top: 0;
+            color: #555;
+        }
+        
+        .empty-state p {
+            color: #777;
+            margin-bottom: 20px;
+        }
+        
+        .reload-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .photo-container {
+            width: 100%;
+            height: auto;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .photo {
+            width: 100%;
+            display: block;
+            object-fit: contain;
+        }
+        
+        .photo-info {
+            padding: 15px;
+        }
+        
+        .cat-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0 0 5px 0;
+        }
+        
+        .cat-breed {
+            color: #777;
+            margin: 0 0 15px 0;
+            font-size: 14px;
+        }
+        
+        .photo-description {
+            margin-bottom: 15px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+        
+        .vote-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        button {
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.2s ease;
+        }
+        
+        .good-btn {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .good-btn:hover {
+            background-color: #3d8b40;
+        }
+        
+        .evil-btn {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .evil-btn:hover {
+            background-color: #d32f2f;
+        }
+        
+        .comment-btn {
+            background-color: #f1f1f1;
+            color: #555;
+        }
+        
+        .comment-btn:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .comments-section {
+            padding: 15px;
+            border-top: 1px solid #eee;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .comments-section.open {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .comment-form {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        
+        .comment-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            resize: none;
+            font-family: inherit;
+        }
+        
+        .comment-submit {
+            margin-left: 10px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 15px;
+            cursor: pointer;
+        }
+        
+        .comment {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .comment-author {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .comment-content {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .load-more {
+            text-align: center;
+            padding: 20px 0;
+        }
+        
+        .load-more-btn {
+            background-color: #f1f1f1;
+            color: #555;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s ease;
+        }
+        
+        .load-more-btn:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .feedback {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .feedback.success {
+            background-color: var(--primary-color);
+        }
+        
+        .feedback.error {
+            background-color: var(--danger-color);
+        }
+        
+        .feedback.show {
+            opacity: 1;
+        }
+
+        .auth-warning {
+            padding: 10px 15px;
+            background-color: #fff3cd;
+            color: #856404;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .auth-warning.show {
+            display: block;
+        }
+
+        .login-link {
+            color: #0066cc;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .login-link:hover {
+            text-decoration: underline;
+        }
+
+        .swipe-animation {
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+
+        .swipe-left {
+            transform: translateX(-150%) rotate(-15deg);
+            opacity: 0;
+        }
+
+        .swipe-right {
+            transform: translateX(150%) rotate(15deg);
+            opacity: 0;
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+        }
+
+        @keyframes skeleton-loading {
+            0% {
+                background-position: 200% 0;
+            }
+            100% {
+                background-position: -200% 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Cat Feed</h1>
+    </header>
+    
+    <div class="container">
+        <div class="feed" id="feed">
+            <!-- Only one photo will be shown here -->
+            <div class="empty-state" id="empty-state" style="display: none;">
+                <h3>No more cats to show</h3>
+                <p>You've seen all the cats in our database!</p>
+                <button class="reload-btn" id="reload-btn">Start Over</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="feedback" class="feedback"></div>
+
+    <template id="photo-card-template">
+        <div class="photo-card">
+            <div class="photo-container">
+                <img class="photo" src="" alt="Cat Photo">
+            </div>
+            <div class="photo-info">
+                <h2 class="cat-name"></h2>
+                <p class="cat-breed"></p>
+                <p class="photo-description"></p>
+                <div class="auth-warning">
+                    Please <a href="/login/" class="login-link">log in</a> to vote or comment
+                </div>
+                <div class="actions">
+                    <div class="vote-buttons">
+                        <button class="good-btn" data-vote="good">
+                            <span>👼</span> Good
+                        </button>
+                        <button class="evil-btn" data-vote="evil">
+                            <span>👿</span> Evil
+                        </button>
+                    </div>
+                    <button class="comment-btn">
+                        <span>💬</span> Comments
+                    </button>
+                </div>
+            </div>
+            <div class="comments-section">
+                <form class="comment-form">
+                    <input type="text" class="comment-input" placeholder="Add a comment...">
+                    <button type="submit" class="comment-submit">Send</button>
+                </form>
+                <div class="comments-container">
+                    <!-- Comments will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </template>
+    
+    <template id="comment-template">
+        <div class="comment">
+            <div class="comment-author"></div>
+            <div class="comment-content"></div>
+        </div>
+    </template>
+
+    <template id="skeleton-template">
+        <div class="photo-card">
+            <div class="photo-container skeleton" style="height: 320px;"></div>
+            <div class="photo-info">
+                <div class="skeleton" style="height: 24px; width: 70%; margin-bottom: 8px;"></div>
+                <div class="skeleton" style="height: 16px; width: 40%; margin-bottom: 16px;"></div>
+                <div class="skeleton" style="height: 16px; width: 100%; margin-bottom: 8px;"></div>
+                <div class="skeleton" style="height: 16px; width: 90%; margin-bottom: 16px;"></div>
+                <div class="actions">
+                    <div class="skeleton" style="height: 36px; width: 120px;"></div>
+                    <div class="skeleton" style="height: 36px; width: 50px;"></div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const feed = document.getElementById('feed');
+            const feedbackEl = document.getElementById('feedback');
+            const photoCardTemplate = document.getElementById('photo-card-template');
+            const commentTemplate = document.getElementById('comment-template');
+            const skeletonTemplate = document.getElementById('skeleton-template');
+            const emptyState = document.getElementById('empty-state');
+            const reloadBtn = document.getElementById('reload-btn');
+            
+            let page = 1;
+            let isAuthenticated = false;
+            let photoCache = [];
+            let currentPhotoIndex = -1;
+            
+            // Reload button
+            reloadBtn.addEventListener('click', function() {
+                page = 1;
+                photoCache = [];
+                currentPhotoIndex = -1;
+                emptyState.style.display = 'none';
+                loadPhotos();
+            });
+            
+            // Check if user is authenticated by looking for token
+            function checkAuth() {
+                const token = localStorage.getItem('token');
+                isAuthenticated = !!token;
+                return isAuthenticated;
+            }
+            
+            // Show feedback message
+            function showFeedback(message, type) {
+                feedbackEl.textContent = message;
+                feedbackEl.className = `feedback ${type}`;
+                feedbackEl.classList.add('show');
+                
+                setTimeout(() => {
+                    feedbackEl.classList.remove('show');
+                }, 3000);
+            }
+            
+            // Load photos
+            function loadPhotos() {
+                // Only load if the feed is empty
+                if (document.querySelector('.photo-card')) {
+                    return;
+                }
+                
+                // Show skeleton loader
+                const skeleton = skeletonTemplate.content.cloneNode(true);
+                feed.appendChild(skeleton);
+                
+                fetch(`/api/fotos/?page=${page}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to load photos');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Remove skeleton
+                        const skeletons = feed.querySelectorAll('.skeleton');
+                        skeletons.forEach(skeleton => {
+                            if (skeleton.parentNode && skeleton.parentNode.className === 'photo-card') {
+                                skeleton.parentNode.remove();
+                            }
+                        });
+                        
+                        console.log('API Response:', data);
+                        
+                        // Check if we have results
+                        if (data.results && data.results.length > 0) {
+                            // We only need one photo
+                            createPhotoCard(data.results[0]);
+                            
+                            // Store the rest for later
+                            currentPhotoIndex = 0;
+                            photoCache = data.results;
+                            
+                            document.getElementById('empty-state').style.display = 'none';
+                        } else {
+                            // No more photos to show
+                            document.getElementById('empty-state').style.display = 'block';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading photos:', error);
+                        showFeedback('Failed to load photos', 'error');
+                        
+                        // Remove skeletons on error
+                        const skeletons = feed.querySelectorAll('.skeleton');
+                        skeletons.forEach(skeleton => {
+                            if (skeleton.parentNode && skeleton.parentNode.className === 'photo-card') {
+                                skeleton.parentNode.remove();
+                            }
+                        });
+                    });
+            }
+            
+            // Load next photo
+            function loadNextPhoto() {
+                // Remove current photo if exists
+                const currentPhoto = document.querySelector('.photo-card');
+                if (currentPhoto) {
+                    currentPhoto.remove();
+                }
+                
+                // Check if we have more photos in our cache
+                currentPhotoIndex++;
+                if (photoCache && currentPhotoIndex < photoCache.length) {
+                    // We have another photo in the cache
+                    createPhotoCard(photoCache[currentPhotoIndex]);
+                } else {
+                    // Need to load more photos
+                    page++;
+                    loadPhotos();
+                }
+            }
+            
+            // Create a photo card
+            function createPhotoCard(photo) {
+                const card = photoCardTemplate.content.cloneNode(true);
+                
+                // Set photo data
+                const photoImg = card.querySelector('.photo');
+                photoImg.src = photo.imagen_url || 'https://res.cloudinary.com/demo/image/upload/v1708881903/cat_photos/default_cat.jpg';
+                photoImg.alt = `Photo of ${photo.nombre_gato}`;
+                
+                card.querySelector('.cat-name').textContent = photo.nombre_gato;
+                card.querySelector('.cat-breed').textContent = photo.raza_gato;
+                card.querySelector('.photo-description').textContent = photo.descripcion;
+                
+                const photoCard = card.querySelector('.photo-card');
+                photoCard.dataset.photoId = photo.id;
+                
+                // Auth warning
+                const authWarning = card.querySelector('.auth-warning');
+                if (!checkAuth()) {
+                    authWarning.classList.add('show');
+                }
+                
+                // Vote buttons
+                const voteButtons = card.querySelectorAll('.vote-buttons button');
+                voteButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        if (!checkAuth()) {
+                            showFeedback('Please log in to vote', 'error');
+                            return;
+                        }
+                        
+                        const voteType = this.dataset.vote;
+                        const photoId = photoCard.dataset.photoId;
+                        
+                        // Animate the card
+                        photoCard.classList.add('swipe-animation');
+                        if (voteType === 'good') {
+                            photoCard.classList.add('swipe-right');
+                        } else {
+                            photoCard.classList.add('swipe-left');
+                        }
+                        
+                        // Send vote
+                        sendVote(photoId, voteType);
+                        
+                        // Load next photo after animation
+                        setTimeout(() => {
+                            loadNextPhoto();
+                        }, 500);
+                    });
+                });
+                
+                // Comments button
+                const commentBtn = card.querySelector('.comment-btn');
+                const commentsSection = card.querySelector('.comments-section');
+                commentBtn.addEventListener('click', function() {
+                    commentsSection.classList.toggle('open');
+                    
+                    if (commentsSection.classList.contains('open')) {
+                        const photoId = photoCard.dataset.photoId;
+                        loadComments(photoId, commentsSection.querySelector('.comments-container'));
+                    }
+                });
+                
+                // Comment form
+                const commentForm = card.querySelector('.comment-form');
+                commentForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    if (!checkAuth()) {
+                        showFeedback('Please log in to comment', 'error');
+                        return;
+                    }
+                    
+                    const photoId = photoCard.dataset.photoId;
+                    const commentInput = this.querySelector('.comment-input');
+                    const commentText = commentInput.value.trim();
+                    
+                    if (commentText) {
+                        sendComment(photoId, commentText, commentsSection.querySelector('.comments-container'));
+                        commentInput.value = '';
+                    }
+                });
+                
+                feed.appendChild(card);
+            }
+            
+            // Send vote to API
+            function sendVote(photoId, voteType) {
+                if (!checkAuth()) return;
+                
+                const token = localStorage.getItem('token');
+                
+                fetch('/api/votos/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        id_foto: photoId,
+                        tipo: voteType
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to vote');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    showFeedback(`Voted ${voteType}!`, 'success');
+                })
+                .catch(error => {
+                    console.error('Error voting:', error);
+                    showFeedback('Failed to vote', 'error');
+                });
+            }
+            
+            // Load comments for a photo
+            function loadComments(photoId, container) {
+                container.innerHTML = '<div class="skeleton" style="height: 60px; width: 100%; margin-bottom: 10px;"></div>';
+                
+                fetch(`/api/comentarios/?id_foto=${photoId}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            console.log('Response status:', response.status);
+                            return response.json().then(err => {
+                                throw new Error(err.detail || 'Failed to load comments');
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        container.innerHTML = '';
+                        console.log('Comment data:', data); // Debug log
+                        
+                        if (data.results && data.results.length > 0) {
+                            data.results.forEach(comment => {
+                                const commentEl = commentTemplate.content.cloneNode(true);
+                                commentEl.querySelector('.comment-author').textContent = comment.username || 'Anonymous';
+                                commentEl.querySelector('.comment-content').textContent = comment.contenido;
+                                container.appendChild(commentEl);
+                            });
+                        } else {
+                            container.innerHTML = '<p>No comments yet</p>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading comments:', error);
+                        container.innerHTML = '<p>Failed to load comments: ' + error.message + '</p>';
+                        if (!checkAuth()) {
+                            container.innerHTML += '<p>You may need to log in to view comments.</p>';
+                        }
+                    });
+            }
+            
+            // Send comment to API
+            function sendComment(photoId, commentText, container) {
+                if (!checkAuth()) return;
+                
+                const token = localStorage.getItem('token');
+                
+                fetch('/api/comentarios/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        id_foto: photoId,
+                        contenido: commentText
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to add comment');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    showFeedback('Comment added!', 'success');
+                    
+                    // Add the new comment to the list
+                    const commentEl = commentTemplate.content.cloneNode(true);
+                    commentEl.querySelector('.comment-author').textContent = 'You';
+                    commentEl.querySelector('.comment-content').textContent = commentText;
+                    container.appendChild(commentEl);
+                })
+                .catch(error => {
+                    console.error('Error adding comment:', error);
+                    showFeedback('Failed to add comment', 'error');
+                });
+            }
+            
+            // Initial load
+            loadPhotos();
+        });
+    </script>
+</body>
+</html> 

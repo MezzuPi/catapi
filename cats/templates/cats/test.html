@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat API Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .cat-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .api-data {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        h1, h2 {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cat API Test Page</h1>
+    
+    <section>
+        <h2>Template Test</h2>
+        <p>This is a test page rendered by Django templates.</p>
+        
+        {% if message %}
+        <div class="cat-card">
+            <h3>Message</h3>
+            <p>{{ message }}</p>
+        </div>
+        {% endif %}
+    </section>
+    
+    <section>
+        <h2>API Data Test</h2>
+        {% if cats %}
+            <h3>Cats in Database</h3>
+            {% for cat in cats %}
+                <div class="cat-card">
+                    <h4>{{ cat.nombre }}</h4>
+                    <p>Raza: {{ cat.raza }}</p>
+                    <p>Edad: {{ cat.edad }}</p>
+                    <p>Descripción: {{ cat.descripcion }}</p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No cats found in the database.</p>
+        {% endif %}
+    </section>
+    
+    <section>
+        <h2>Raw API Data</h2>
+        <div class="api-data">
+            <pre>{{ api_data_json }}</pre>
+        </div>
+    </section>
+</body>
+</html> 

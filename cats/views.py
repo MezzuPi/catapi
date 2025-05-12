@@ -143,7 +143,20 @@ class VotoViewSet(viewsets.ModelViewSet):
 class ComentarioViewSet(viewsets.ModelViewSet):
     queryset = Comentario.objects.all()
     serializer_class = ComentarioSerializer
-    permission_classes = [IsAuthenticated]
+    
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            permission_classes = [AllowAny]
+        else:
+            permission_classes = [IsAuthenticated]
+        return [permission() for permission in permission_classes]
+
+    def get_queryset(self):
+        queryset = Comentario.objects.all()
+        id_foto = self.request.query_params.get('id_foto', None)
+        if id_foto is not None:
+            queryset = queryset.filter(id_foto=id_foto)
+        return queryset
 
     def create(self, request, *args, **kwargs):
         request.data['id_usuario'] = request.user.id
@@ -216,4 +229,4 @@ class NotificacionViewSet(viewsets.ModelViewSet):
         notificacion = self.get_object()
         notificacion.leida = True
         notificacion.save()
-        return Response(NotificacionSerializer(notificacion).data)
+        return Response(NotificacionSerializer(notificacion).data) 
